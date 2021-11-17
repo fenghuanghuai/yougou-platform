@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<head th:include="layout/head">
+<div th:include="layout/foot"></div>
+<script type="text/javascript">
+	cb.loadmodules([ "validate", "ajax", "lay", "jqgrid", "ztree","upload" ]);
+
+</script>
+</head>
+<body>
+	<div id="kv-avatar-errors-2" class="center-block" style="width:800px;display:none"></div>
+	<form id="studentForm" class="form-horizontal" th:action="@{sys/student/saveorupdate}" th:object="${tsysStudent}" method="post" enctype="multipart/form-data">
+		<input type="hidden" id="studentId" name="studentId" th:field="*{studentId}" />
+				<input type="hidden" name="tokenForm"
+			th:value="${#session.getAttribute('tokenForm')}" />
+		<div class="layui-tab layui-tab-brief cb-addinfo-tab">
+			 <ul class="layui-tab-title cb-addinfo-title">
+			   <li class="layui-this">基本信息</li>
+			 </ul>
+			 <div class="layui-tab-content">
+			    <div class="layui-tab-item layui-show">
+					<!-- 	<input type="hidden" name="repeattoken" th:value="${session.repeattoken}"/> -->
+					 <table  class="table table-bordered FormView cb-table-fun">
+					 	
+					 	<tr>
+					 		<td class="cb-label">姓名</td>
+					 		<td class="cb-value"><input type="text" class="form-control cb-form-control validate[required,maxSize[15]]" name="studentName" th:field="*{studentName}"  placeholder="姓名"/></td>
+					 		<td class="cb-label" th:rowspan="*{studentId} == null?4 : 3">用户头像</td>
+					 		<td  th:rowspan="*{studentId} == null?4 : 3" class="cb-value text-center" > <!-- *{userimg} != null ? ${ctx}uplad*{userimg}:@{/common/images/default_avatar_male.jpg} -->
+					 		<cb:upload id="studentImg" name="file" length="2000" size="95,110" th:value="*{studentImg} != null ? ${ctx} + '/upload/' + *{studentImg}:@{/common/images/default_avatar_male.jpg}" accept="image/*"/>
+					 		<!-- <input type="file" name="file" id="file" class="projectfile"/>
+					 -->
+					 		</td>
+					 	</tr>
+						 <!--th:field="*{phone}"  th:field="*{stunumber}"  th:field="*{stuname}"-->
+					 	<tr th:if="*{studentId == null}">
+					 		<td class="cb-label">学号</td>
+					 		<td class="cb-value"><input type="text" class="form-control cb-form-control validate[required]" name="studentNumber" th:field="*{studentNumber}"  placeholder="学号"/></td>
+					 	</tr>
+					 	<tr >
+					 		<td class="cb-label">手机号码</td>
+					 		<td class="cb-value"><input type="text" class="form-control cb-form-control validate[required,mixSize[6],maxSize[25]]" name="studentMobile" th:field="*{studentMobile}"  placeholder="手机号码"/></td>
+					 		
+					 	</tr>
+						 <tr >
+							 <td class="cb-label">年龄</td>
+							 <td class="cb-value"><input type="text" class="form-control cb-form-control validate[required,mixSize[6],maxSize[25]]" name="studentAge" th:field="*{studentAge}"  placeholder="年龄"/></td>
+						 </tr>
+						 <tr>
+							 <td class="cb-label">备注</td>
+							 <td class="cb-value"><input type="text" class="form-control cb-form-control validate[required,mixSize[6],maxSize[25]]" name="studentRemark" th:field="*{studentRemark}"  placeholder="备注"/></td>
+							 <td class="cb-label">所属机构</td>
+							 <td class="cb-value"><cb:tree id="orgId" name="orgId" th:value="*{orgId}"
+														   url="sys/tsysorg/query" type="input"
+														   class="form-control cb-form-control"
+														   treeStyle="border:0px;" expandAll="true"
+														   mapper="{'name':'orgName','icon':'icon','parentId':'parentId','parentValue':-1,'cbid':'orgId'}" />
+							 </td>
+						 </tr>
+					 </table>
+				</div>
+			 </div>
+		</div>
+	</form>
+</body>
+<script type="text/javascript">
+	console.log()
+	top.cb.oper.save = function(){
+		cb.submit("#studentForm",
+				"sys/student/saveorupdate",
+				function(){
+					cb.alert("保存成功",function(){cb.winclose()});
+				});
+		return false;
+	}
+	top.cb.oper.saveAndAdd = function(){
+		cb.submit("#studentForm","sys/student/saveorupdate",function(){
+			cb.alert("保存成功",function(){location.reload(true); });// 提交后重置表单
+
+		})
+	}
+
+</script>
+<script type="text/javascript">
+	$(function () {
+		$('#birthday').datetimepicker({
+			format: 'YYYY-MM-DD',
+			locale: 'zh-cn'
+		});
+	});
+</script>
+</html>

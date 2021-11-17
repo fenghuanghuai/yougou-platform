@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+<head th:include="layout/head" />
+<!-- 加载js -->
+<div th:include="layout/foot" />
+<body>
+	<div class="panel-body">
+		<div id="query_area">
+			<!-- 查询条件区域begin-->
+			<table class="table table-bordered FormView cb-table-fun" border="0"
+				cellspacing="1" cellpadding="0">
+				<tr>
+					<td class="cb-label">姓名</td>
+					<td class="cb-value"><input type="text" id="studentName" name="studentName"
+						class="form-control cb-form-control"></td>
+					<td class="cb-label">学号</td>
+					<td class="cb-value"><input type="text" id="studentNumber" name="studentNumber"
+												class="form-control cb-form-control"></td>
+				</tr>
+				<tr >
+
+					<td class="cb-label">所属机构</td>
+					<td class="cb-value"><cb:tree id="orgId" name="orgId" url="sys/tsysorg/query" type="input" class="form-control cb-form-control" treeStyle="width: 385px;height:100px;"
+												  expandAll="true" mapper="{'name':'orgName','icon':'icon','parentId':'parentId','parentValue':-1,'cbid':'orgId'}" /></td>
+
+				</tr>
+			</table>
+		</div>
+		<!-- 查询条件区域end-->
+		<!-- 按钮栏布局begin -->
+		<div id="toolbar_area" class="toolbar_area">
+			<shiro:hasPermission name="sys:student:list">
+				<a class="btn btn-default cb-btn"
+				href="javascript:void(0)" onclick="query()"><i
+				class="glyphicon glyphicon-search"></i>&nbsp;查询</a> 
+			</shiro:hasPermission>
+			<shiro:hasPermission name="sys:student:add">
+				<a class="btn btn-default cb-btn"
+				onclick="add()"><i class="glyphicon glyphicon-plus"></i>&nbsp;新增</a>
+			</shiro:hasPermission>
+			<shiro:hasPermission name="sys:student:edit">
+				<a class="btn btn-default cb-btn"
+				onclick="edit()"><i class="glyphicon glyphicon-edit"></i>&nbsp;修改</a>
+			</shiro:hasPermission>
+			<shiro:hasPermission name="sys:student:remove">
+				<a class="btn btn-default cb-btn"
+				onclick="del()"><i class="glyphicon glyphicon-trash"></i>&nbsp;删除</a>
+			</shiro:hasPermission>
+		</div>
+		<!-- 按钮栏布局end -->
+		</form>
+	</div>
+	<table id="jqGrid"></table>
+	<div id="jqGridPager"></div>
+</body>
+<script type="text/javascript">
+cb.loadmodules(["validate","ajax","lay","jqgrid","ztree"]);
+	$(function() {
+		$("#jqGrid").jqGrid({
+			url : cb.baseurl + 'sys/student/query',
+			datatype : "json",
+			colModel : [ {
+				label : '角色ID',
+				name : 'studentId',
+				width : 45,
+				key : true,
+				hidden : true
+			}, {
+				label : '学生姓名',
+				name : 'studentName',
+				width : 75,
+				formatter:function(cellvalue, options, rowObject){return "<a href=\"javascript:void(0)\" class=\"\" lay-filter=\"formDemo\"" +
+						"onclick=\"detail('"+ rowObject.studentId +"')\" title=\"点击查看详细信息\">&nbsp;"+ cellvalue +"</a>"}
+			},{
+				label : '学号',
+				name : 'studentNumber',
+				width : 75
+			},{
+				label : '年龄',
+				name : 'studentAge',
+				width : 75
+			},{
+				label : '手机号码',
+				name : 'studentMobile',
+				width : 75
+			},{
+				label : '头像',
+				name : 'studentImg',
+				width : 75,
+				formatter:function(value, options, rowObject){return "<img src=\http://localhost:81/console/upload/" + value +"\  style=\"height: 20px\"> "}
+			},{
+				label : '所属机构',
+				name : 'orgId',
+				width : 75
+			},{
+				label : '备注',
+				name : 'studentRemark',
+				width : 75
+			}],
+			viewrecords : true,
+			height : 385,
+			rowNum : 10,
+			rowList : [ 10, 30, 50 ],
+			rownumbers : true,
+			rownumWidth : 25,
+			autowidth : true,
+			multiselect : true,
+			pager : "#jqGridPager",
+			jsonReader : {
+				root : "page.list",
+				page : "page.currPage",
+				total : "page.totalPage",
+				records : "page.totalCount"
+			},
+			prmNames : {
+				page : "page",
+				rows : "limit",
+				order : "order"
+			},
+			gridComplete : function() {
+				//隐藏grid底部滚动条
+				$("#jqGrid").closest(".ui-jqgrid-bdiv").css({
+					"overflow-x" : "hidden"
+				});
+			}
+		});
+
+	});
+	//查看详细信息
+	function detail(id){
+		cb.winopen('详细信息','800px', '800px','sys/student/view/' + id,'no',function(){});
+	}
+	//查询角色
+	function query() {
+		var page = $("#jqGrid").jqGrid('getGridParam', 'page');
+
+		$("#jqGrid").jqGrid('setGridParam', {
+			postData : {
+				"studentName" : $("#studentName").val(),
+				"studentNumber" : $("input[name=studentNumber]").val(),
+				"orgId" : $("input[name=orgId]").val()
+			},
+			page : page
+		}).trigger("reloadGrid");
+	}
+	//新增角色
+	function add() {
+		cb.winopen('新增角色', '800px', '600px', 'sys/student/add', 'yes',
+				function() {
+					query()
+				});
+	}
+	//分配用户
+	function setUser() {
+
+		var id = cb.getselectedrow("#jqGrid")
+		if (id)
+			cb.winopen('分配用户', '800px', '600px', 'sys/role/setUser/' + id,
+					'yes','','',false);
+	}
+	//修改角色
+	function edit() {
+		var id = cb.getselectedrow("#jqGrid")
+		if (id)
+			cb.winopen('修改', '800px', '600px', 'sys/student/edit?studentId='+id,
+					'yes',function() {
+						query()
+					},'',false );
+	}
+	//删除角色
+	function del() {
+		var ids = cb.getselectedrows("#jqGrid")
+		if (ids) {
+			cb.confirm("确定删除吗？", function() {
+				cb.post("sys/student/remove", JSON.stringify(ids),
+						function(result) {
+					cb.alert("删除成功", function() {
+								query();
+							});
+
+						},{contentType:"application/json"});
+
+			})
+		}
+	}
+</script>
+</html>
